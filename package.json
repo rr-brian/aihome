@@ -1,0 +1,20 @@
+{
+  "name": "ai-site",
+  "version": "1.0.0",
+  "main": "server-wrapper.js",
+  "scripts": {
+    "start": "node server-wrapper.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Modern webpage with Azure OpenAI chatbot",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "openai": "^4.104.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
