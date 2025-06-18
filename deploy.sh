@@ -25,9 +25,8 @@ if [ -e "$DEPLOYMENT_TARGET/package.json" ]; then
   echo "Installing npm packages..."
   cd "$DEPLOYMENT_TARGET"
   
-  # Update npm itself
-  echo "Updating npm..."
-  npm install -g npm
+  # Skip npm update as it requires Node.js 20+
+  echo "Using existing npm version: $(npm -v)"
   
   # Install dependencies
   echo "Running npm install --production"
