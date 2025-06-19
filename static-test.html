@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static File Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #0078d4;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .timestamp {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Static File Test</h1>
+        <p class="success">If you can see this page, static HTML files are being served correctly!</p>
+        <p class="timestamp">This file was created at: 2025-06-19 10:10:15</p>
+        <p>This file should be served directly by IIS, bypassing the Node.js server.</p>
+        
+        <h2>Deployment Information</h2>
+        <ul>
+            <li><strong>File Path:</strong> /static-test.html</li>
+            <li><strong>Deployment Method:</strong> Direct ZIP deployment</li>
+            <li><strong>Timestamp:</strong> 2025-06-19 10:10:15</li>
+        </ul>
+    </div>
+</body>
+</html>
