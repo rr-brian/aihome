@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add a welcome message
-    addBotMessage("Hello! I'm an AI assistant powered by Azure OpenAI. How can I help you today?");
+    addBotMessage("Hello! I'm an AI assistant powered by Realty Technology Services and OpenAI. How can I help you today?");
 
     async function handleUserMessage() {
         const userMessage = userInput.value.trim();
