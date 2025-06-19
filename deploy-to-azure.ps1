@@ -1,10 +1,11 @@
-# Azure deployment script for RTS AI Assist
+# Azure deployment script for Realty Technology Services AI Assistant
 # This script deploys the application to Azure App Service
 
 # Variables
 $resourceGroup = "rts_innovate"
 $appName = "rr-aihome"
-$location = "eastus"  # Change if needed
+# Location is used when creating new resources
+$location = "eastus"  # Used when creating new App Service Plan
 $appServicePlanName = "rts-app-plan"  # You can change this name if needed
 $sku = "B1"  # Basic tier, you can change to S1, P1V2, etc. based on your needs
 
@@ -13,8 +14,8 @@ Write-Host "Starting deployment to Azure App Service..." -ForegroundColor Green
 # Check if app service plan exists, create if it doesn't
 $planExists = az appservice plan list --resource-group $resourceGroup --query "[?name=='$appServicePlanName']" --output tsv
 if (!$planExists) {
-    Write-Host "Creating App Service Plan: $appServicePlanName..." -ForegroundColor Yellow
-    az appservice plan create --name $appServicePlanName --resource-group $resourceGroup --sku $sku --is-linux
+    Write-Host "Creating App Service Plan: $appServicePlanName in $location..." -ForegroundColor Yellow
+    az appservice plan create --name $appServicePlanName --resource-group $resourceGroup --sku $sku --is-linux --location $location
 }
 
 # Check if web app exists, create if it doesn't
