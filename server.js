@@ -42,6 +42,65 @@ const server = http.createServer(async (req, res) => {
   
   console.log(`Received request for: ${pathname}`);
   
+  // Diagnostic endpoint to check file access
+  if (pathname === '/api/test-files') {
+    try {
+      const logoPath = path.join(__dirname, 'images', 'logo.png');
+      let result = { exists: false, size: 0, files: [] };
+      
+      // Check if logo exists
+      try {
+        const stats = fs.statSync(logoPath);
+        result.exists = true;
+        result.size = stats.size;
+      } catch (error) {
+        result.error = error.message;
+      }
+      
+      // List all files in images directory
+      try {
+        const imagesDir = path.join(__dirname, 'images');
+        const files = fs.readdirSync(imagesDir);
+        
+        files.forEach(file => {
+          const filePath = path.join(imagesDir, file);
+          const stats = fs.statSync(filePath);
+          result.files.push({
+            name: file,
+            size: stats.size,
+            path: filePath
+          });
+        });
+      } catch (error) {
+        result.dirError = error.message;
+      }
+      
+      // List all directories in the root
+      try {
+        const rootDir = __dirname;
+        const allItems = fs.readdirSync(rootDir);
+        result.rootItems = allItems.filter(item => {
+          const itemPath = path.join(rootDir, item);
+          try {
+            return fs.statSync(itemPath).isDirectory();
+          } catch (e) {
+            return false;
+          }
+        });
+      } catch (error) {
+        result.rootError = error.message;
+      }
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result, null, 2));
+      return;
+    } catch (error) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+      return;
+    }
+  }
+  
   // Handle API requests
   if (pathname === '/api/chat' && req.method === 'POST') {
     let body = '';
