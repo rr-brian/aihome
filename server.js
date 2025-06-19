@@ -169,6 +169,31 @@ const server = http.createServer(async (req, res) => {
     const absolutePath = path.resolve(__dirname, filePath);
     console.log(`Reading from absolute path: ${absolutePath}`);
     
+    // Check if file exists before reading
+    if (!fs.existsSync(absolutePath)) {
+      console.error(`File does not exist: ${absolutePath}`);
+      console.log(`Directory exists: ${fs.existsSync(path.dirname(absolutePath))}`);
+      
+      // List contents of the parent directory
+      try {
+        const parentDir = path.dirname(absolutePath);
+        console.log(`Contents of ${parentDir}:`);
+        const dirContents = fs.readdirSync(parentDir);
+        dirContents.forEach(item => console.log(`- ${item}`));
+      } catch (dirError) {
+        console.error(`Error listing directory: ${dirError.message}`);
+      }
+      
+      res.writeHead(404);
+      res.end(`File not found: ${filePath}`);
+      return;
+    }
+    
+    // Log file stats
+    const stats = fs.statSync(absolutePath);
+    console.log(`File size: ${stats.size} bytes`);
+    console.log(`Content type: ${contentType}`);
+    
     const content = fs.readFileSync(absolutePath);
     res.writeHead(200, { 'Content-Type': contentType });
     res.end(content, 'utf-8');
