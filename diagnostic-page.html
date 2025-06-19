@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Deployment Diagnostic Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #0078d4;
+        }
+        .timestamp {
+            font-style: italic;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Azure Deployment Diagnostic Page</h1>
+        <p class="timestamp">Generated on: June 19, 2025 - 09:57 AM</p>
+        
+        <div class="section">
+            <h2>Deployment Verification</h2>
+            <p>This page confirms that the latest deployment was successful.</p>
+            <p>If you can see this page, it means the HTML files are being deployed correctly.</p>
+        </div>
+        
+        <div class="section">
+            <h2>File Access Test</h2>
+            <p>Testing access to other files:</p>
+            <ul id="fileTests">
+                <li>Testing...</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Environment Information</h2>
+            <p>Browser information:</p>
+            <pre id="browserInfo"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Display browser information
+        document.getElementById('browserInfo').textContent = 
+            `User Agent: ${navigator.userAgent}\n` +
+            `Platform: ${navigator.platform}\n` +
+            `Language: ${navigator.language}\n` +
+            `Cookies Enabled: ${navigator.cookieEnabled}\n` +
+            `Current URL: ${window.location.href}`;
+        
+        // Test file access
+        const filesToTest = [
+            'index.html',
+            'script.js',
+            'styles.css',
+            'deployment-test.html',
+            'test-deployment-20250619-0913.html',
+            'favicon.ico',
+            'robots933456.txt'
+        ];
+        
+        const fileTestsList = document.getElementById('fileTests');
+        fileTestsList.innerHTML = '';
+        
+        filesToTest.forEach(file => {
+            const listItem = document.createElement('li');
+            
+            fetch(file)
+                .then(response => {
+                    if (response.ok) {
+                        listItem.innerHTML = `<span class="success">✓</span> ${file} - Found (Status: ${response.status})`;
+                    } else {
+                        listItem.innerHTML = `<span class="error">✗</span> ${file} - Not found (Status: ${response.status})`;
+                    }
+                })
+                .catch(error => {
+                    listItem.innerHTML = `<span class="error">✗</span> ${file} - Error: ${error.message}`;
+                });
+            
+            fileTestsList.appendChild(listItem);
+        });
+    </script>
+</body>
+</html>
