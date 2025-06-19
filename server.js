@@ -87,6 +87,22 @@ const server = http.createServer(async (req, res) => {
     case '.css':
       contentType = 'text/css';
       break;
+    case '.png':
+      contentType = 'image/png';
+      break;
+    case '.jpg':
+    case '.jpeg':
+      contentType = 'image/jpeg';
+      break;
+    case '.gif':
+      contentType = 'image/gif';
+      break;
+    case '.svg':
+      contentType = 'image/svg+xml';
+      break;
+    case '.ico':
+      contentType = 'image/x-icon';
+      break;
   }
   
   try {
