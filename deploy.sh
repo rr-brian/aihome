@@ -40,6 +40,28 @@ else
 fi
 
 # 3. Print diagnostic information
+# 3. Ensure static assets are copied
+echo "========== Copying static assets =========="
+
+# Ensure images directory exists
+if [ -d "$DEPLOYMENT_SOURCE/images" ]; then
+  echo "Images directory found in source. Ensuring it exists in target..."
+  mkdir -p "$DEPLOYMENT_TARGET/images"
+  
+  # Copy all image files
+  echo "Copying image files..."
+  cp -rf "$DEPLOYMENT_SOURCE/images"/* "$DEPLOYMENT_TARGET/images/"
+  
+  # List copied files
+  echo "Images directory contents:"
+  ls -la "$DEPLOYMENT_TARGET/images"
+else
+  echo "WARNING: Images directory not found in source: $DEPLOYMENT_SOURCE/images"
+  # Try to find where images might be
+  echo "Searching for images directory..."
+  find "$DEPLOYMENT_SOURCE" -type d -name "images" -print
+fi
+
 echo "========== Deployment Diagnostics =========="
 echo "Node version: $(node -v)"
 echo "NPM version: $(npm -v)"
