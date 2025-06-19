@@ -93,7 +93,7 @@ const server = http.createServer(async (req, res) => {
   // Normalize the file path to handle Windows path separators
   filePath = path.normalize(filePath);
   
-  console.log(`Attempting to serve file: ${filePath}`);
+  console.log(`[${new Date().toISOString()}] Attempting to serve file: ${filePath}`);
   
   const extname = path.extname(filePath);
   let contentType = 'text/html';
@@ -127,16 +127,34 @@ const server = http.createServer(async (req, res) => {
     // Use absolute path for file reading
     // First try the current directory
     let absolutePath = path.resolve(__dirname, filePath);
+    let fileExists = fs.existsSync(absolutePath);
+    
+    // Log the file path and whether it exists
+    console.log(`[${new Date().toISOString()}] Checking path: ${absolutePath}, exists: ${fileExists}`);
     
     // If file doesn't exist in current directory, try wwwroot (common Azure App Service path)
-    if (!fs.existsSync(absolutePath) && process.env.HOME) {
+    if (!fileExists && process.env.HOME) {
       const wwwrootPath = path.join(process.env.HOME, 'site', 'wwwroot', filePath);
-      if (fs.existsSync(wwwrootPath)) {
+      fileExists = fs.existsSync(wwwrootPath);
+      console.log(`[${new Date().toISOString()}] Checking Azure path: ${wwwrootPath}, exists: ${fileExists}`);
+      
+      if (fileExists) {
         absolutePath = wwwrootPath;
       }
     }
     
-    console.log(`Reading file from: ${absolutePath}`);
+    // If still not found, try one level up (sometimes needed in Azure)
+    if (!fileExists) {
+      const parentPath = path.resolve(__dirname, '..', filePath);
+      fileExists = fs.existsSync(parentPath);
+      console.log(`[${new Date().toISOString()}] Checking parent path: ${parentPath}, exists: ${fileExists}`);
+      
+      if (fileExists) {
+        absolutePath = parentPath;
+      }
+    }
+    
+    console.log(`[${new Date().toISOString()}] Reading file from: ${absolutePath}`);
     const content = fs.readFileSync(absolutePath);
     
     // Add cache control headers to prevent caching
@@ -151,8 +169,25 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, cacheHeaders);
     res.end(content, 'utf-8');
   } catch (error) {
-    console.error(`Error serving file ${filePath}:`, error);
+    console.error(`[${new Date().toISOString()}] Error serving file ${filePath}:`, error);
+    
     if (error.code === 'ENOENT') {
+      // Log more detailed information about the file not found
+      console.error(`[${new Date().toISOString()}] File not found details:`);
+      console.error(`  - Requested path: ${filePath}`);
+      console.error(`  - Current directory: ${__dirname}`);
+      console.error(`  - HOME env: ${process.env.HOME || 'not set'}`);
+      
+      // Try to list the directory contents to help with debugging
+      try {
+        const dirPath = path.dirname(path.resolve(__dirname, filePath));
+        console.error(`[${new Date().toISOString()}] Listing directory: ${dirPath}`);
+        const files = fs.readdirSync(dirPath);
+        console.error(`  - Directory contents: ${files.join(', ')}`);
+      } catch (dirError) {
+        console.error(`[${new Date().toISOString()}] Could not list directory:`, dirError);
+      }
+      
       res.writeHead(404);
       res.end(`File not found: ${filePath}`);
     } else {
