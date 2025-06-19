@@ -42,6 +42,13 @@ const server = http.createServer(async (req, res) => {
   
   console.log(`Received request for: ${pathname}`);
   
+  // Handle Azure health check probe
+  if (pathname === '/robots933456.txt') {
+    console.log('Handling Azure health check request');
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Health check OK');
+    return;
+  }
   
   // Handle API requests
   if (pathname === '/api/chat' && req.method === 'POST') {
