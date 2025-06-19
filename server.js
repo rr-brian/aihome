@@ -50,6 +50,78 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   
+  // Diagnostic endpoint to list all files in the deployment directory
+  if (pathname === '/diagnostics/files') {
+    console.log('Handling diagnostics/files request');
+    
+    function listFilesRecursively(dir, basePath = '') {
+      let results = [];
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const relativePath = path.join(basePath, entry.name);
+        const fullPath = path.join(dir, entry.name);
+        
+        if (entry.isDirectory()) {
+          results.push({ type: 'directory', path: relativePath });
+          results = results.concat(listFilesRecursively(fullPath, relativePath));
+        } else {
+          results.push({ 
+            type: 'file', 
+            path: relativePath,
+            size: fs.statSync(fullPath).size,
+            extension: path.extname(entry.name)
+          });
+        }
+      }
+      
+      return results;
+    }
+    
+    try {
+      const diagnosticInfo = {
+        timestamp: new Date().toISOString(),
+        currentDirectory: __dirname,
+        homeDirectory: process.env.HOME || 'not set',
+        nodeEnv: process.env.NODE_ENV || 'not set',
+        platform: process.platform,
+        nodeVersion: process.version,
+        files: []
+      };
+      
+      // List files in the current directory
+      diagnosticInfo.files.push({ location: 'current directory', files: listFilesRecursively(__dirname) });
+      
+      // Try to list files in the Azure wwwroot directory if it exists
+      if (process.env.HOME) {
+        const wwwrootPath = path.join(process.env.HOME, 'site', 'wwwroot');
+        if (fs.existsSync(wwwrootPath)) {
+          diagnosticInfo.files.push({ location: 'Azure wwwroot', files: listFilesRecursively(wwwrootPath) });
+        }
+      }
+      
+      // Try to list files in D:\home\site\wwwroot if it exists (Windows Azure)
+      const windowsPath = path.join('D:', 'home', 'site', 'wwwroot');
+      if (fs.existsSync(windowsPath)) {
+        diagnosticInfo.files.push({ location: 'Windows Azure path', files: listFilesRecursively(windowsPath) });
+      }
+      
+      // Try to list files in /home/site/wwwroot if it exists (Linux Azure)
+      const linuxPath = '/home/site/wwwroot';
+      if (fs.existsSync(linuxPath)) {
+        diagnosticInfo.files.push({ location: 'Linux Azure path', files: listFilesRecursively(linuxPath) });
+      }
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(diagnosticInfo, null, 2));
+    } catch (error) {
+      console.error('Error in diagnostics endpoint:', error);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message, stack: error.stack }));
+    }
+    return;
+  }
+  
 
   
   // Handle API requests
