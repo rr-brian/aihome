@@ -134,26 +134,46 @@ const server = http.createServer(async (req, res) => {
     // Log the file path and whether it exists
     console.log(`[${new Date().toISOString()}] Checking path: ${absolutePath}, exists: ${fileExists}`);
     
-    // If file doesn't exist in current directory, try wwwroot (common Azure App Service path)
-    if (!fileExists && process.env.HOME) {
-      const wwwrootPath = path.join(process.env.HOME, 'site', 'wwwroot', filePath);
-      fileExists = fs.existsSync(wwwrootPath);
-      console.log(`[${new Date().toISOString()}] Checking Azure path: ${wwwrootPath}, exists: ${fileExists}`);
+    // Try all possible paths where the file might be located
+    const possiblePaths = [
+      // Current directory
+      absolutePath,
       
-      if (fileExists) {
-        absolutePath = wwwrootPath;
+      // Azure App Service wwwroot path
+      process.env.HOME ? path.join(process.env.HOME, 'site', 'wwwroot', filePath) : null,
+      
+      // One level up from current directory
+      path.resolve(__dirname, '..', filePath),
+      
+      // D:\home\site\wwwroot (common Azure Windows path)
+      path.join('D:', 'home', 'site', 'wwwroot', filePath),
+      
+      // /home/site/wwwroot (common Azure Linux path)
+      path.join('/home', 'site', 'wwwroot', filePath),
+      
+      // Try with different casing
+      path.join(__dirname, filePath.toLowerCase()),
+      
+      // Try with different path separators
+      path.join(__dirname, filePath.replace(/\\/g, '/')),
+      path.join(__dirname, filePath.replace(/\//g, '\\'))
+    ].filter(Boolean); // Remove null entries
+    
+    // Try each path until we find the file
+    for (const testPath of possiblePaths) {
+      if (fs.existsSync(testPath)) {
+        console.log(`[${new Date().toISOString()}] Found file at: ${testPath}`);
+        absolutePath = testPath;
+        fileExists = true;
+        break;
+      } else {
+        console.log(`[${new Date().toISOString()}] File not found at: ${testPath}`);
       }
     }
     
-    // If still not found, try one level up (sometimes needed in Azure)
+    // If file still not found, throw error
     if (!fileExists) {
-      const parentPath = path.resolve(__dirname, '..', filePath);
-      fileExists = fs.existsSync(parentPath);
-      console.log(`[${new Date().toISOString()}] Checking parent path: ${parentPath}, exists: ${fileExists}`);
-      
-      if (fileExists) {
-        absolutePath = parentPath;
-      }
+      throw new Error(`File not found in any of the possible locations: ${filePath}`);
     }
     
     console.log(`[${new Date().toISOString()}] Reading file from: ${absolutePath}`);
@@ -173,29 +193,67 @@ const server = http.createServer(async (req, res) => {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error serving file ${filePath}:`, error);
     
-    if (error.code === 'ENOENT') {
-      // Log more detailed information about the file not found
-      console.error(`[${new Date().toISOString()}] File not found details:`);
-      console.error(`  - Requested path: ${filePath}`);
-      console.error(`  - Current directory: ${__dirname}`);
-      console.error(`  - HOME env: ${process.env.HOME || 'not set'}`);
-      
-      // Try to list the directory contents to help with debugging
-      try {
-        const dirPath = path.dirname(path.resolve(__dirname, filePath));
-        console.error(`[${new Date().toISOString()}] Listing directory: ${dirPath}`);
-        const files = fs.readdirSync(dirPath);
-        console.error(`  - Directory contents: ${files.join(', ')}`);
-      } catch (dirError) {
-        console.error(`[${new Date().toISOString()}] Could not list directory:`, dirError);
-      }
-      
-      res.writeHead(404);
-      res.end(`File not found: ${filePath}`);
-    } else {
-      res.writeHead(500);
-      res.end(`Internal Server Error: ${error.message}`);
+    // Create a detailed error response with debugging information
+    const errorInfo = {
+      timestamp: new Date().toISOString(),
+      requestedFile: filePath,
+      error: error.message,
+      currentDirectory: __dirname,
+      homeDirectory: process.env.HOME || 'not set',
+      nodeEnv: process.env.NODE_ENV || 'not set',
+      appRoot: path.resolve(__dirname),
+      osType: process.platform,
+      nodeVersion: process.version
+    };
+    
+    console.error(`[${new Date().toISOString()}] Error details:`, JSON.stringify(errorInfo, null, 2));
+    
+    // Try to list the directory contents to help with debugging
+    try {
+      const dirPath = path.dirname(path.resolve(__dirname, filePath));
+      console.error(`[${new Date().toISOString()}] Listing directory: ${dirPath}`);
+      const files = fs.readdirSync(dirPath);
+      console.error(`  - Directory contents: ${files.join(', ')}`);
+    } catch (dirError) {
+      console.error(`[${new Date().toISOString()}] Could not list directory:`, dirError);
     }
+    
+    // Send a more informative error page
+    res.writeHead(404, { 'Content-Type': 'text/html' });
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>File Not Found</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          .container { max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+          h1 { color: #d9534f; }
+          pre { background-color: #f8f9fa; padding: 15px; overflow: auto; }
+          .timestamp { font-style: italic; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>File Not Found</h1>
+          <p>The requested file <strong>${filePath}</strong> could not be found on the server.</p>
+          <p class="timestamp">Timestamp: ${new Date().toISOString()}</p>
+          
+          <h2>Debug Information</h2>
+          <pre>${JSON.stringify(errorInfo, null, 2)}</pre>
+          
+          <h2>Available Test Files</h2>
+          <ul>
+            <li><a href="/">Home Page (index.html)</a></li>
+            <li><a href="/simple-test.html">Simple Test Page</a></li>
+            <li><a href="/static-test.html">Static Test Page</a></li>
+            <li><a href="/file-test.html">File Test Page</a></li>
+            <li><a href="/web-config-test.html">Web Config Test Page</a></li>
+          </ul>
+        </div>
+      </body>
+      </html>
+    `);
   }
 });
 
