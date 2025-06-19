@@ -112,13 +112,86 @@ const server = http.createServer(async (req, res) => {
         diagnosticInfo.files.push({ location: 'Linux Azure path', files: listFilesRecursively(linuxPath) });
       }
       
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.writeHead(200, { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Surrogate-Control': 'no-store'
+      });
       res.end(JSON.stringify(diagnosticInfo, null, 2));
     } catch (error) {
       console.error('Error in diagnostics endpoint:', error);
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: error.message, stack: error.stack }));
     }
+    return;
+  }
+  
+  // Special route to serve direct-test-route directly from code
+  if (pathname === '/direct-test-route') {
+    console.log('Serving direct-test-route');
+    res.writeHead(200, { 
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'Surrogate-Control': 'no-store'
+    });
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Direct Test Route</title>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 40px;
+                  line-height: 1.6;
+              }
+              .container {
+                  max-width: 800px;
+                  margin: 0 auto;
+                  padding: 20px;
+                  border: 1px solid #ddd;
+                  border-radius: 5px;
+              }
+              h1 {
+                  color: #0078d4;
+              }
+              .timestamp {
+                  font-style: italic;
+                  color: #666;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>Direct Test Route</h1>
+              <p>This content is being served directly from the Node.js server code, not from a static file.</p>
+              <p class="timestamp">Timestamp: ${new Date().toISOString()}</p>
+              
+              <h2>Environment Information</h2>
+              <ul>
+                  <li>Node.js Version: ${process.version}</li>
+                  <li>Platform: ${process.platform}</li>
+                  <li>Current Directory: ${__dirname}</li>
+                  <li>HOME Environment: ${process.env.HOME || 'not set'}</li>
+              </ul>
+              
+              <h2>Test Links</h2>
+              <ul>
+                  <li><a href="/">Home Page</a></li>
+                  <li><a href="/direct-test.html">Direct Test HTML (static file)</a></li>
+                  <li><a href="/simple-test.html">Simple Test HTML (static file)</a></li>
+                  <li><a href="/diagnostics/files">Diagnostics: File List</a></li>
+              </ul>
+          </div>
+      </body>
+      </html>
+    `);
     return;
   }
   
@@ -283,60 +356,11 @@ const server = http.createServer(async (req, res) => {
       
       // One level up from current directory
       path.resolve(__dirname, '..', filePath),
-      
-      // D:\home\site\wwwroot (common Azure Windows path)
-      path.join('D:', 'home', 'site', 'wwwroot', filePath),
-      
-      // /home/site/wwwroot (common Azure Linux path)
-      path.join('/home', 'site', 'wwwroot', filePath),
-      
-      // Try with different casing
-      path.join(__dirname, filePath.toLowerCase()),
-      
-      // Try with different path separators
-      path.join(__dirname, filePath.replace(/\\/g, '/')),
-      path.join(__dirname, filePath.replace(/\//g, '\\'))
-    ].filter(Boolean); // Remove null entries
-    
-    // Try each path until we find the file
-    for (const testPath of possiblePaths) {
-      if (fs.existsSync(testPath)) {
-        console.log(`[${new Date().toISOString()}] Found file at: ${testPath}`);
-        absolutePath = testPath;
-        fileExists = true;
-        break;
-      } else {
-        console.log(`[${new Date().toISOString()}] File not found at: ${testPath}`);
-      }
-    }
-    
-    // If file still not found, throw error
-    if (!fileExists) {
-      throw new Error(`File not found in any of the possible locations: ${filePath}`);
-    }
-    
-    console.log(`[${new Date().toISOString()}] Reading file from: ${absolutePath}`);
-    const content = fs.readFileSync(absolutePath);
-    
-    // Add cache control headers to prevent caching
-    const cacheHeaders = {
       'Content-Type': contentType,
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0',
       'Surrogate-Control': 'no-store'
-    };
-    
-    res.writeHead(200, cacheHeaders);
-    res.end(content, 'utf-8');
-  } catch (error) {
-    console.error(`[${new Date().toISOString()}] Error serving file ${filePath}:`, error);
-    
-    // Create a detailed error response with debugging information
-    const errorInfo = {
-      timestamp: new Date().toISOString(),
-      requestedFile: filePath,
-      error: error.message,
       currentDirectory: __dirname,
       homeDirectory: process.env.HOME || 'not set',
       nodeEnv: process.env.NODE_ENV || 'not set',
