@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add a welcome message with timestamp for deployment verification
-    addBotMessage("Hello! I'm an AI assistant powered by Realty Technology Services and OpenAI. How can I help you today? (Updated: June 19, 2025 - 08:36 AM)");
+    addBotMessage("Hello! I'm an AI assistant powered by Realty Technology Services and OpenAI. How can I help you today? (Manual deployment: 2025-06-19 08:45:23)");
 
     async function handleUserMessage() {
         const userMessage = userInput.value.trim();
@@ -106,3 +106,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
