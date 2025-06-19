@@ -94,6 +94,8 @@ const server = http.createServer(async (req, res) => {
   filePath = path.normalize(filePath);
   
   console.log(`[${new Date().toISOString()}] Attempting to serve file: ${filePath}`);
+  console.log(`[${new Date().toISOString()}] Current directory: ${__dirname}`);
+  console.log(`[${new Date().toISOString()}] HOME environment: ${process.env.HOME || 'not set'}`);
   
   const extname = path.extname(filePath);
   let contentType = 'text/html';
