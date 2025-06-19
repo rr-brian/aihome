@@ -111,7 +111,17 @@ const server = http.createServer(async (req, res) => {
     const absolutePath = path.resolve(__dirname, filePath);
     
     const content = fs.readFileSync(absolutePath);
-    res.writeHead(200, { 'Content-Type': contentType });
+    
+    // Add cache control headers to prevent caching
+    const cacheHeaders = {
+      'Content-Type': contentType,
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'Surrogate-Control': 'no-store'
+    };
+    
+    res.writeHead(200, cacheHeaders);
     res.end(content, 'utf-8');
   } catch (error) {
     console.error(`Error serving file ${filePath}:`, error);
