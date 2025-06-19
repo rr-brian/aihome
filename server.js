@@ -88,7 +88,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Serve static files
-  let filePath = pathname === '/' ? './index.html' : '.' + pathname;
+  let filePath = pathname === '/' ? 'index.html' : pathname.substring(1);
   
   // Normalize the file path to handle Windows path separators
   filePath = path.normalize(filePath);
@@ -125,8 +125,18 @@ const server = http.createServer(async (req, res) => {
   
   try {
     // Use absolute path for file reading
-    const absolutePath = path.resolve(__dirname, filePath);
+    // First try the current directory
+    let absolutePath = path.resolve(__dirname, filePath);
     
+    // If file doesn't exist in current directory, try wwwroot (common Azure App Service path)
+    if (!fs.existsSync(absolutePath) && process.env.HOME) {
+      const wwwrootPath = path.join(process.env.HOME, 'site', 'wwwroot', filePath);
+      if (fs.existsSync(wwwrootPath)) {
+        absolutePath = wwwrootPath;
+      }
+    }
+    
+    console.log(`Reading file from: ${absolutePath}`);
     const content = fs.readFileSync(absolutePath);
     
     // Add cache control headers to prevent caching
