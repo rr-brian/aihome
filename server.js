@@ -50,13 +50,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   
-  // Handle favicon.ico request
-  if (pathname === '/favicon.ico') {
-    console.log('Handling favicon.ico request');
-    res.writeHead(204); // No content response
-    res.end();
-    return;
-  }
+
   
   // Handle API requests
   if (pathname === '/api/chat' && req.method === 'POST') {
@@ -85,6 +79,14 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   
+  // Handle favicon.ico request
+  if (pathname === '/favicon.ico') {
+    console.log('Handling favicon.ico request');
+    res.writeHead(204); // No content response
+    res.end();
+    return;
+  }
+
   // Serve static files
   let filePath = pathname === '/' ? './index.html' : '.' + pathname;
   
