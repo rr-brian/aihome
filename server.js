@@ -158,6 +158,73 @@ const server = http.createServer(async (req, res) => {
     res.end();
     return;
   }
+  
+  // Special route to serve direct-test.html directly from code
+  if (pathname === '/direct-test-route') {
+    console.log('Serving direct-test-route');
+    res.writeHead(200, { 
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'Surrogate-Control': 'no-store'
+    });
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Direct Test Route</title>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 40px;
+                  line-height: 1.6;
+              }
+              .container {
+                  max-width: 800px;
+                  margin: 0 auto;
+                  padding: 20px;
+                  border: 1px solid #ddd;
+                  border-radius: 5px;
+              }
+              h1 {
+                  color: #0078d4;
+              }
+              .timestamp {
+                  font-style: italic;
+                  color: #666;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <h1>Direct Test Route</h1>
+              <p>This content is being served directly from the Node.js server code, not from a static file.</p>
+              <p class="timestamp">Timestamp: ${new Date().toISOString()}</p>
+              
+              <h2>Environment Information</h2>
+              <ul>
+                  <li>Node.js Version: ${process.version}</li>
+                  <li>Platform: ${process.platform}</li>
+                  <li>Current Directory: ${__dirname}</li>
+                  <li>HOME Environment: ${process.env.HOME || 'not set'}</li>
+              </ul>
+              
+              <h2>Test Links</h2>
+              <ul>
+                  <li><a href="/">Home Page</a></li>
+                  <li><a href="/direct-test.html">Direct Test HTML (static file)</a></li>
+                  <li><a href="/simple-test.html">Simple Test HTML (static file)</a></li>
+                  <li><a href="/diagnostics/files">Diagnostics: File List</a></li>
+              </ul>
+          </div>
+      </body>
+      </html>
+    `);
+    return;
+  }
 
   // Serve static files
   let filePath = pathname === '/' ? 'index.html' : pathname.substring(1);
