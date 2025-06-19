@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web.config Static File Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #0078d4;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .timestamp {
+            font-style: italic;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web.config Static File Test</h1>
+        <p class="success">If you can see this page, the web.config changes have fixed static file serving!</p>
+        <p class="timestamp">This file was created at: 2025-06-19 11:00:15</p>
+        
+        <h2>Web.config Changes</h2>
+        <ul>
+            <li>Updated StaticContent rule to use action type="None" instead of Rewrite</li>
+            <li>Added IsFile condition to StaticContent rule</li>
+            <li>Enhanced MIME type mappings for common file extensions</li>
+            <li>Set cache control to use max age of 1 second for cache busting</li>
+        </ul>
+        
+        <h2>Testing Links to Other Static Files</h2>
+        <p>Click the links below to test if other static files are accessible:</p>
+        <ul>
+            <li><a href="/file-test.html">file-test.html</a></li>
+            <li><a href="/static-test.html">static-test.html</a></li>
+            <li><a href="/iistest.html">iistest.html</a></li>
+            <li><a href="/diagnostic-page.html">diagnostic-page.html</a></li>
+        </ul>
+        
+        <h2>Cache Busting Test</h2>
+        <p>This section includes a timestamp to test cache busting:</p>
+        <div id="cache-test">
+            <p>Cache busting timestamp: 2025-06-19 11:00:15</p>
+        </div>
+    </div>
+</body>
+</html>
