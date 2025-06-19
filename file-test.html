@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static File Test - Direct HTML</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #0078d4;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .timestamp {
+            font-style: italic;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Static File Test - Direct HTML</h1>
+        <p class="success">If you can see this page, IIS is serving static HTML files correctly!</p>
+        <p class="timestamp">This file was created at: 2025-06-19 10:48:00</p>
+        
+        <h2>File Information</h2>
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>File Name</td>
+                <td>file-test.html</td>
+            </tr>
+            <tr>
+                <td>File Path</td>
+                <td>/file-test.html</td>
+            </tr>
+            <tr>
+                <td>Creation Time</td>
+                <td>2025-06-19 10:48:00</td>
+            </tr>
+            <tr>
+                <td>Deployment Method</td>
+                <td>Direct ZIP deployment</td>
+            </tr>
+        </table>
+        
+        <h2>Testing Links to Other Static Files</h2>
+        <p>Click the links below to test if other static files are accessible:</p>
+        <ul>
+            <li><a href="/static-test.html">static-test.html</a></li>
+            <li><a href="/iistest.html">iistest.html</a></li>
+            <li><a href="/diagnostic-page.html">diagnostic-page.html</a></li>
+            <li><a href="/deployment-test.html">deployment-test.html</a></li>
+            <li><a href="/github-auto-test.html">github-auto-test.html</a></li>
+        </ul>
+        
+        <h2>Cache Busting Test</h2>
+        <p>This section includes a timestamp to test cache busting:</p>
+        <div id="cache-test">
+            <p>Cache busting timestamp: 2025-06-19 10:48:00</p>
+        </div>
+    </div>
+</body>
+</html>
