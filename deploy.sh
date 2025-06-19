@@ -71,6 +71,12 @@ ls -la
 echo "Environment variables:"
 printenv | grep -v -E "(PASSWORD|KEY|SECRET|TOKEN)"
 
+# Touch web.config to trigger application restart
+if [ -e "$DEPLOYMENT_TARGET/web.config" ]; then
+  echo "Touching web.config to trigger application restart..."
+  touch "$DEPLOYMENT_TARGET/web.config"
+fi
+
 echo "========== Deployment script completed successfully =========="
 
 # 3. Start the application
